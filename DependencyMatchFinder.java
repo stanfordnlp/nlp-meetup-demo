@@ -43,8 +43,7 @@ public class DependencyMatchFinder {
                 if (question.entityMarkerToString.keySet().contains(iw.word())) {
                     String entityMarker = iw.word();
                     // check for incoming edge matches
-                    List<SemanticGraphEdge> inEdges = sg.incomingEdgeList(iw);
-                    for (SemanticGraphEdge ie : inEdges) {
+                    for (SemanticGraphEdge ie : sg.incomingEdgeList(iw)) {
                         for (SemanticGraphEdge phie : placeHolderInEdges) {
                             if ((ie.getGovernor().word().equals(phie.getGovernor().word())) &&
                                     ie.getRelation().getShortName().equals(phie.getRelation().getShortName())) {
@@ -53,8 +52,7 @@ public class DependencyMatchFinder {
                         }
                     }
                     // check for outgoing edge matches
-                    List<SemanticGraphEdge> outEdges = sg.outgoingEdgeList(iw);
-                    for (SemanticGraphEdge oe : outEdges) {
+                    for (SemanticGraphEdge oe : sg.outgoingEdgeList(iw)) {
                         for (SemanticGraphEdge phoe : placeHolderOutEdges) {
                             if ((oe.getDependent().word().equals(phoe.getDependent().word())) &&
                                     oe.getRelation().getShortName().equals(phoe.getRelation().getShortName())) {
