@@ -38,8 +38,7 @@ public class DependencyMatchFinder {
         // go through the passage and look for matching edges
         for (CoreMap sentence : question.passageAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
             SemanticGraph sg = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
-            Set<IndexedWord> nodes = sg.vertexSet();
-            for (IndexedWord iw : nodes) {
+            for (IndexedWord iw : sg.vertexSet()) {
                 if (question.entityMarkerToString.keySet().contains(iw.word())) {
                     String entityMarker = iw.word();
                     // check for incoming edge matches
