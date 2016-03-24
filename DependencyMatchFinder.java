@@ -5,80 +5,58 @@ import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.util.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class DependencyMatchFinder {
 
-    public List<Pair<String,SemanticGraphEdge>> findDependencyMatches(Question question) {
+    public HashSet<Triple<String, String, String>> findDependencyMatches(Question question) {
 
-        List<SemanticGraphEdge> placeHolderInEdges = new ArrayList<SemanticGraphEdge>();
-        List<SemanticGraphEdge> placeHolderOutEdges = new ArrayList<SemanticGraphEdge>();
+
+        HashMap<String, HashMap<String, String>> placeHolderEdges = new HashMap<String, HashMap<String, String>>();
+        placeHolderEdges.put("out", new HashMap<String, String>());
+        placeHolderEdges.put("in", new HashMap<String, String>());
 
         // get the edges going into and leaving @placeholder
         for (CoreMap sentence : question.questionAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
             SemanticGraph sg = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
             for (IndexedWord iw : sg.vertexSet()) {
                 if (iw.word().equals("@placeholder")) {
-                    placeHolderInEdges = sg.incomingEdgeList(iw);
-                    placeHolderOutEdges = sg.outgoingEdgeList(iw);
-                }
-            }
-        }
-        // go through, for each entity, check for matches
-        HashMap<String,HashSet<SemanticGraphEdge>> matchingInEdges = new HashMap<String, HashSet<SemanticGraphEdge>>();
-        HashMap<String,HashSet<SemanticGraphEdge>> matchingOutEdges = new HashMap<String, HashSet<SemanticGraphEdge>>();
-        for (String entity : question.entityMarkerToString.keySet()) {
-            matchingInEdges.put(entity, new HashSet<SemanticGraphEdge>());
-            matchingOutEdges.put(entity, new HashSet<SemanticGraphEdge>());
-        }
-        // go through the passage and look for matching edges
-        for (CoreMap sentence : question.passageAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-            SemanticGraph sg = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
-            for (IndexedWord iw : sg.vertexSet()) {
-                if (question.entityMarkerToString.keySet().contains(iw.word())) {
-                    String entityMarker = iw.word();
-                    // check for incoming edge matches
-                    for (SemanticGraphEdge ie : sg.incomingEdgeList(iw)) {
-                        for (SemanticGraphEdge phie : placeHolderInEdges) {
-                            if ((ie.getGovernor().word().equals(phie.getGovernor().word())) &&
-                                    ie.getRelation().getShortName().equals(phie.getRelation().getShortName())) {
-                                matchingInEdges.get(entityMarker).add(phie);
-                            }
-                        }
+                    for (SemanticGraphEdge phe : sg.incomingEdgeList(iw)) {
+                        placeHolderEdges.get("in").put(phe.getRelation().getShortName(), phe.getGovernor().word());
                     }
-                    // check for outgoing edge matches
-                    for (SemanticGraphEdge oe : sg.outgoingEdgeList(iw)) {
-                        for (SemanticGraphEdge phoe : placeHolderOutEdges) {
-                            if ((oe.getDependent().word().equals(phoe.getDependent().word())) &&
-                                    oe.getRelation().getShortName().equals(phoe.getRelation().getShortName())) {
-                                matchingOutEdges.get(entityMarker).add(phoe);
-                            }
-                        }
+                    for (SemanticGraphEdge phe : sg.outgoingEdgeList(iw)) {
+                        placeHolderEdges.get("out").put(phe.getRelation().getShortName(), phe.getDependent().word());
                     }
                 }
             }
         }
 
-        ArrayList<Pair<String,SemanticGraphEdge>> dependencyMatches =
-                new ArrayList<Pair<String,SemanticGraphEdge>>();
-        for (String entity : matchingInEdges.keySet()) {
-            for (SemanticGraphEdge se : matchingInEdges.get(entity)) {
-                Pair<String, SemanticGraphEdge> entityAndMatchingEdge =
-                        new Pair<String,SemanticGraphEdge>(entity, se);
-                dependencyMatches.add(entityAndMatchingEdge);
+        HashSet<Triple<String, String, String>> matchesFound = new HashSet<Triple<String, String, String>>();
+        // go through the passage looking for matching edges
+        for (CoreMap sentence : question.passageAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
+            SemanticGraph sg = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
+            for (IndexedWord iw : sg.vertexSet()) {
+                // skip if not of the form @entity55
+                if (!question.entityMarkerToString.keySet().contains(iw.word()))
+                    continue;
+                for (SemanticGraphEdge se : sg.incomingEdgeList(iw)) {
+                    String governorWord = se.getGovernor().word();
+                    String relationName = se.getRelation().getShortName();
+                    String potentialMatch = placeHolderEdges.get("in").get(relationName);
+                    if (potentialMatch != null && potentialMatch.equals(governorWord))
+                        matchesFound.add(new Triple(governorWord, relationName, iw.word()));
+                }
+                for (SemanticGraphEdge se : sg.outgoingEdgeList(iw)) {
+                    String dependentWord = se.getDependent().word();
+                    String relationName = se.getRelation().getShortName();
+                    String potentialMatch = placeHolderEdges.get("out").get(relationName);
+                    if (potentialMatch != null && potentialMatch.equals(dependentWord))
+                        matchesFound.add(new Triple(iw.word(), relationName, dependentWord));
+                }
             }
         }
-        for (String entity : matchingOutEdges.keySet()) {
-            for (SemanticGraphEdge se : matchingOutEdges.get(entity)) {
-                Pair<String, SemanticGraphEdge> entityAndMatchingEdge =
-                        new Pair<String,SemanticGraphEdge>(entity, se);
-                dependencyMatches.add(entityAndMatchingEdge);
-            }
-        }
-        return dependencyMatches;
+
+        return matchesFound;
     }
 }

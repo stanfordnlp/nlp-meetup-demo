@@ -132,7 +132,8 @@ public class Question {
                 // print out the dependency edges
                 System.out.println("\tdependency edges: ");
                 String[] depEdges =
-                        sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class).toList().split("\n");
+                        sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class)
+                                .toList().split("\n");
                 for (String edge : depEdges) {
                     System.out.println("\t"+edge);
                 }
@@ -149,18 +150,17 @@ public class Question {
         Question sampleQuestion = new Question(questionFilePath, props);
         sampleQuestion.printQuestion();
         DependencyMatchFinder dependencyMatchFinder = new DependencyMatchFinder();
-        List<Pair<String,SemanticGraphEdge>> matchingEdges =
+        HashSet<Triple<String,String,String>> matchingEdges =
                 dependencyMatchFinder.findDependencyMatches(sampleQuestion);
-        Collections.sort(matchingEdges);
+
         System.out.println("");
         System.out.println("matching edges found: ");
         System.out.println("");
 
-        for (Pair<String,SemanticGraphEdge> entityAndEdge : matchingEdges) {
-            String entityMarker = entityAndEdge.first();
-            String entityName = sampleQuestion.entityMarkerToString.get(entityMarker);
-            String matchingEdge = entityAndEdge.second().toString();
-            System.out.println("\t" + entityMarker+","+entityName+","+matchingEdge.toString());
+        for (Triple<String, String, String> matchingEdge : matchingEdges) {
+            System.out.println(matchingEdge);
         }
+
+        System.out.println("");
     }
 }
