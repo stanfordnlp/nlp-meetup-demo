@@ -168,7 +168,7 @@ public class Question {
             String entityMarker = entityAndEdge.first();
             String entityName = sampleQuestion.entityMarkerToString.get(entityMarker);
             String matchingEdge = entityAndEdge.second().toString();
-            System.out.println("\t" + entityAndEdge.toString());
+            System.out.println("\t" + entityMarker+","+entityName+","+matchingEdge.toString());
         }
     }
 }
