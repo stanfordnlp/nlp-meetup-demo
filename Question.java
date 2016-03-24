@@ -124,8 +124,8 @@ public class Question {
                 // print out (word, pos tag, ner tag) triples
                 System.out.print("\t");
                 for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                    System.out.print("(" + token.word() + "," + token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + ","
-                            +token.get(CoreAnnotations.NamedEntityTagAnnotation.class)+") ");
+                    System.out.print("(" + token.word() + "," + token.tag() + ","
+                            +token.ner()+") ");
                 }
                 System.out.println();
                 System.out.println();
