@@ -21,8 +21,7 @@ public class DependencyMatchFinder {
         // get the edges going into and leaving @placeholder
         for (CoreMap sentence : question.questionAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
             SemanticGraph sg = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
-            Set<IndexedWord> nodes = sg.vertexSet();
-            for (IndexedWord iw : nodes) {
+            for (IndexedWord iw : sg.vertexSet()) {
                 if (iw.word().equals("@placeholder")) {
                     placeHolderInEdges = sg.incomingEdgeList(iw);
                     placeHolderOutEdges = sg.outgoingEdgeList(iw);
@@ -66,6 +65,7 @@ public class DependencyMatchFinder {
                 }
             }
         }
+
         ArrayList<Pair<String,SemanticGraphEdge>> dependencyMatches =
                 new ArrayList<Pair<String,SemanticGraphEdge>>();
         for (String entity : matchingInEdges.keySet()) {
