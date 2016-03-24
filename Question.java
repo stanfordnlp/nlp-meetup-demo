@@ -150,15 +150,26 @@ public class Question {
         Question sampleQuestion = new Question(questionFilePath, props);
         sampleQuestion.printQuestion();
         DependencyMatchFinder dependencyMatchFinder = new DependencyMatchFinder();
-        HashSet<Triple<String,String,String>> matchingEdges =
+        HashMap<Integer, HashSet<Triple<String,String,String>>> matchingEdges =
                 dependencyMatchFinder.findDependencyMatches(sampleQuestion);
 
         System.out.println("");
         System.out.println("matching edges found: ");
         System.out.println("");
 
-        for (Triple<String, String, String> matchingEdge : matchingEdges) {
-            System.out.println(matchingEdge);
+        List<Integer> entityNumbersFound = new ArrayList(matchingEdges.keySet());
+
+        Collections.sort(entityNumbersFound);
+
+        for (Integer entityNumber : entityNumbersFound) {
+            if (matchingEdges.get(entityNumber).size() == 0)
+                continue;
+            System.out.println("---");
+            System.out.println("matches for: @entity"+Integer.toString(entityNumber));
+            // print out edges for this entity number
+            for (Triple<String,String,String> matchingEdge : matchingEdges.get(entityNumber)) {
+                System.out.println(matchingEdge);
+            }
         }
 
         System.out.println("");
