@@ -79,8 +79,8 @@ public class Question {
         // set up the serializer
         serializer = new ProtobufAnnotationSerializer();
         // build passage and question annotations
-        File passageAnnotationFile = new File(questionFilePath+".passage.ann");
-        File questionAnnotationFile = new File(questionFilePath+".question.ann");
+        File passageAnnotationFile = new File(questionFilePath+".passage.ann.ser.gz");
+        File questionAnnotationFile = new File(questionFilePath+".question.ann.ser.gz");
         if (passageAnnotationFile.exists() && questionAnnotationFile.exists()) {
             passageAnnotation = readSerializedAnnotation(passageAnnotationFile.getAbsolutePath());
             questionAnnotation = readSerializedAnnotation(questionAnnotationFile.getAbsolutePath());
