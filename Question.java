@@ -51,6 +51,7 @@ public class Question {
         fos.close();
     }
 
+    /** convert @entity16:New York City to (@entity16, New York City) **/
     public static Pair<String,String> getEntityMarkerAndString(String kvEntry) {
         // get the marker
         String[] kvEntrySplit = kvEntry.split(":");
@@ -62,6 +63,7 @@ public class Question {
         return new Pair<String,String>(entityMarker, entityString);
     }
 
+    /** constructor for Question **/
     public Question(String questionFilePath, Properties annProps) throws
             ClassNotFoundException, IOException {
         // get the passage id
@@ -97,6 +99,7 @@ public class Question {
         }
     }
 
+    /** print out components of question, annotations for each sentence **/
     public void printQuestion() {
         System.out.println("question id: ");
         System.out.println(questionID);
@@ -109,45 +112,34 @@ public class Question {
         System.out.println("");
         System.out.println("annotations: ");
         System.out.println("");
-        System.out.println("\t---");
-        System.out.println("\tquestion");
-        // print out pos info for question
-        for (CoreMap sentence : questionAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-            System.out.print("\t");
-            for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                System.out.print("(" + token.word() + "," + token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + ","
-                        +token.get(CoreAnnotations.NamedEntityTagAnnotation.class)+") ");
+        HashMap<String, Annotation> components = new HashMap<String, Annotation>();
+        components.put("question",questionAnnotation);
+        components.put("passage", passageAnnotation);
+        for (String component : new String[]{"question", "passage"}) {
+            int sentenceCount = 0;
+            Annotation componentAnnotation = components.get(component);
+            for (CoreMap sentence : componentAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
+                System.out.println("\t---");
+                System.out.println("\t"+component+" sentence "+sentenceCount);
+                // print out (word, pos tag, ner tag) triples
+                System.out.print("\t");
+                for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                    System.out.print("(" + token.word() + "," + token.get(CoreAnnotations.PartOfSpeechAnnotation.class) + ","
+                            +token.get(CoreAnnotations.NamedEntityTagAnnotation.class)+") ");
+                }
+                System.out.println();
+                System.out.println();
+                // print out the dependency edges
+                System.out.println("\tdependency edges: ");
+                String[] depEdges =
+                        sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class).toList().split("\n");
+                for (String edge : depEdges) {
+                    System.out.println("\t"+edge);
+                }
+                System.out.println("");
+                // increment sentence count
+                sentenceCount++;
             }
-            System.out.println();
-            System.out.println();
-            System.out.println("\tdependency edges: ");
-            String[] depEdges =
-                    sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class).toList().split("\n");
-            for (String edge : depEdges) {
-                System.out.println("\t"+edge);
-            }
-            System.out.println("");
-        }
-        // print out pos info for passage
-        int sentenceCount = 0;
-        for (CoreMap sentence : passageAnnotation.get(CoreAnnotations.SentencesAnnotation.class)) {
-            System.out.println("\t---");
-            System.out.println("\tpassage sentence "+sentenceCount);
-            sentenceCount++;
-            System.out.print("\t");
-            for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                System.out.print("("+token.word()+","+token.get(CoreAnnotations.PartOfSpeechAnnotation.class)+","
-                        +token.get(CoreAnnotations.NamedEntityTagAnnotation.class)+") ");
-            }
-            System.out.println();
-            System.out.println();
-            System.out.println("\tdependency edges: ");
-            String[] depEdges =
-                    sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class).toList().split("\n");
-            for (String edge : depEdges) {
-                System.out.println("\t" + edge);
-            }
-            System.out.println("");
         }
     }
 
