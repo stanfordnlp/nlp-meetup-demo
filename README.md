@@ -14,4 +14,4 @@ Here are some instructions for running the demo yourself!
 
 5. run this Java command:
 
-      java -Xmx4g -cp "/Users/myusername/stanford-corenlp-full-2015-12-09/\*:stanford-nlp-resources/\*:." Question -questionFilePath 00.question -props annotation.properties
+      java -Xmx3g -cp "/Users/myusername/stanford-corenlp-full-2015-12-09/\*:stanford-nlp-resources/\*:." Question -questionFilePath 00.question -props annotation.properties
